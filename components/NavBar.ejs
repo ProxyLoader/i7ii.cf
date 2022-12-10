@@ -1,0 +1,65 @@
+<% if(!req.user) { %>
+<header>
+      <div class="wrapper">
+      <div class="navbar">
+      <div class="inner_navbar">
+      <div class="logo pop">
+      <a href="/">I7<span>II.CF</span></a>
+      </div>
+      <div class="menu">
+      <ul>
+      
+      
+      
+      <li><a href="#About">About</a></li>
+                      <li><a href="https://discord.gg/qzteqxehbC">Support</a></li>
+
+                              <li><a href="/api/v1">API</a></li>
+                                      <li><a href="/dashboard">Dash</a></li>
+      <li><a href="/login" class="btn btn-success active popup">LOGIN</a></li>
+    
+      
+               
+      
+      </ul>
+      </div>
+      </div>
+      <div class="hamburger">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+      </div>
+      </div>
+      </div>
+      </header>
+<% } else { %>
+<header>
+      <div class="wrapper">
+      <div class="navbar">
+      <div class="inner_navbar">
+      <div class="logo pop">
+      <a href="/">I7<span>II.CF</span></a>
+      </div>
+      <div class="menu">
+      <ul>
+      
+      
+      
+      <li><a href="#About">About</a></li>
+              <li><a href="https://discord.gg/qzteqxehbC">Support</a></li>
+                                      <li><a href="/api/v1">API</a></li>
+                                      <li><a href="/dashboard">Dash</a></li>
+
+      <li><a href="/logout" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">LOGOUT</a></li>
+               
+      
+      </ul>
+      </div>
+      </div>
+      <div class="hamburger">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+      </div>
+      </div>
+      </div>
+      </header>
+
+
+  <% } %>
