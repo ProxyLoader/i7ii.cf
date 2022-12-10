@@ -1,0 +1,7 @@
+{
+    "clientID": "1050853147444269187",  
+    "clientSecret": "Xn5jjT_g0C1YgZlZIPggbKO0Yz_h2vpD",
+    "domain": "https://i7ii.cf",
+    "callback":"https://i7ii.cf/callback",
+    "invite":"https://discord.com/api/oauth2/authorize?client_id=1001096501814100050&permissions=8&scope=bot"
+}
