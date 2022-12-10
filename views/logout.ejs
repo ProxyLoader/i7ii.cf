@@ -1,0 +1,52 @@
+         <%- include("../components/loadLibrary.ejs") -%>
+
+
+
+
+           <title>I7ii.cf | Logout </title>
+    <link rel="icon" type="image/png" href="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" sizes="48x48">
+
+           
+  <div class="container-fluid" style="background-color: #2222">
+
+
+    <% if(!req.user) {%>
+
+      <center>
+
+            <header>
+              
+      <h2 style="margin: 60">You cannot access this page!</h2>
+
+      <p class="ui-text-intro" style="color: #ffff;">You are currently not registerd or logined in our services so you cant access this page! before you login!</p>
+
+                                                  <a class="btn btn-outline-success" href="/login">Login</a>
+      <a class="btn btn-outline-danger" href="/home">Go back</a>
+    </header>
+        
+      </center>  
+
+      
+      <% } else { %>
+
+              <center>
+
+            <header>
+              
+      <h2 style="margin: 60">Completed</h2>
+
+      <p class="ui-text-intro" style="color: #fff;">You have logouted from our services you can relogin by click the buttons bellow</p>
+
+                      <a class="btn btn-outline-secondary" href="/home">Go back</a>
+
+                                    <a class="btn btn-outline-success" href="/login">Login</a>
+              
+      <a class="btn btn-outline-danger" href="/" onclick="<%=        req.session.destroy(() => {}) %>" style="display: none"> >Logout</a>
+
+    </header>
+        
+      </center>  
+        
+
+        <% } %>
+  </div>
