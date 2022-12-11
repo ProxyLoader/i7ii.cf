@@ -47,9 +47,7 @@ let registered = 0;
 
 
 
-const { Webhook, MessageBuilder } = require('discord-webhook-node');
-const hookrequest = new Webhook(process.env.requests);
-const hookcreates = new Webhook(process.env.creates);
+const hookrequest = 1;
 
 
 
@@ -123,13 +121,7 @@ passport.deserializeUser(function (obj, done) {
 
                   i++;
 
-      const embed = new MessageBuilder()
-.setTitle('Request |  Connected!')
-.setColor('#00b0f4')
-.setDescription('> **User: ' + req.user.id + " was logout from our services | " + i + "**")
-.setTimestamp();
 
-      hookrequest.send(embed)
 
       
       function destorySession(){
@@ -156,14 +148,6 @@ passport.deserializeUser(function (obj, done) {
     app.get("/", (req, res) => {
 
             i++;
-
-            const embed = new MessageBuilder()
-.setTitle('Request |  Connected!')
-.setColor('#00b0f4')
-.setDescription('> **User: Unknow' + " was connected to our services | " + i+ "**")
-.setTimestamp();
-
-      hookrequest.send(embed)
       
       return res.render("index", {req, requests: i})
     })
@@ -178,13 +162,7 @@ app.get("/dashboard", async function(req, res,  next) {
 
 
   i++;
-            const embed = new MessageBuilder()
-.setTitle('Request |  Connected!')
-.setColor('#00b0f4')
-.setDescription('> **User: ' + req.user.id + " was connected to our dashboard | " + i+ "**")
-.setTimestamp();
 
-      hookrequest.send(embed)
   
   return res.render("dashboard", {req, res})
 })
@@ -194,6 +172,9 @@ app.post("/create", async function(req, res, next) {
   let nameX = req.body.name;
   let urlX = req.body.url;
   let codeX = '';
+
+  if(!nameX) return res.json({error: "Missing name!"})
+  if(!urlX) return res.json({error: "Missing url!"})
   
   ix++;
 
@@ -225,13 +206,6 @@ app.post("/create", async function(req, res, next) {
 
   res.redirect("/dashboard")
 
-                const embed = new MessageBuilder()
-.setTitle('Request |  POST')
-.setColor('#00b0f4')
-.setDescription('> **User: ' + req.user.id + "  | Name: " + nameX + " | " + urlX + " | " + codeX + "**")
-.setTimestamp();
-
-      hookrequest.send(embed)
     
   } else {
     res.json({this: "Please try again something went error!"})
@@ -253,14 +227,6 @@ app.get("/list", async (req, res, next) => {
 
     const userData = await urlSCH.find({userID: req.user.id})
 
-
-                  const embed = new MessageBuilder()
-.setTitle('Request |  GET')
-.setColor('#00b0f4')
-.setDescription('> **User: ' + req.user.id + "  | Connected to list!**")
-.setTimestamp();
-
-      hookrequest.send(embed)
   
   return res.render("list", { user: userData, discord: req.user})
 })
@@ -277,25 +243,11 @@ app.get("/:id", async function(req, res, next) {
   urlDxP.save
 
   if(!req.user){
-                      const embed = new MessageBuilder()
-.setTitle('Request |  Clicked')
-.setColor('#00b0f4')
-.setDescription('> **The link ' + urlDxP.url + " was clicked by: " + req.ip +" | " + urlDxP.clicks + "**")
-.setTimestamp();
 
-      hookrequest.send(embed)
+
   
   return res.redirect(urlDxP.url);
   } else {
-
-                      const embed = new MessageBuilder()
-.setTitle('Request |  Clicked')
-.setColor('#00b0f4')
-.setDescription('> **The link ' + urlDxP.url + " was clicked by: " + req.user.id +" | " + urlDxP.clicks + "**")
-.setTimestamp();
-
-      hookrequest.send(embed)
-  
   return res.redirect(urlDxP.url);
     
   }
