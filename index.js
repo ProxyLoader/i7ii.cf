@@ -179,7 +179,7 @@ app.post("/create", async function(req, res, next) {
 
   ix++;
 
-
+  if(!req.user) return res.redirect("/login")
 
 
 
