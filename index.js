@@ -18,20 +18,7 @@ const urlSCH = require("./schema/url-schema")
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+require('https').globalAgent.options.rejectUnauthorized = false;
 
 
 
@@ -223,6 +210,31 @@ app.post("/create", async function(req, res, next) {
 
 })
 
+
+app.post("/deleteid", async (req, res, next) => {
+  if(!req.user) return res.render("logout", {req: req})
+        let appid = req.body.appid;
+  const userData = await urlSCH.findOne({ codePX: appid })
+  if(!userData) return res.json({error: "Cannot find any ids in your account!"})
+
+  if(userData.userID !== req.user.id) return res.json({error: "This id is not registered in your account!"})
+      await urlSCH.deleteOne({
+      codePX: appid,
+      name: userData.name,
+    })
+
+
+  console.log("Appid: " + appid)
+
+  return res.redirect("/delete")
+    
+})
+
+app.get("/delete", async (req, res, next) => {
+  if(!req.user) return res.render("logout", {req: req, user: req.user})
+    return res.render("delete", {req: req})
+})
+
 app.get("/list", async (req, res, next) => {
   if (!req.user) return res.redirect("/login")
 
@@ -236,27 +248,21 @@ app.get("/:id", async function(req, res, next) {
   let urlDxP = await urlSCH.findOne({ codePX: req.params.id })
   if (!urlDxP) return res.render("error")
 
-  if (!urlDxP.url.startsWith("https://") && !urlD.url.startsWith("www.")) return res.redirect("https://" + urlDxP.url + "#by:" + urlD.userID)
+  if (!urlDxP.url.includes("https://") && !urlDxP.url.includes("www.")) return res.redirect("https://" + urlDxP.url)
 
-
-
-  urlDxP.clicks++;
-  urlDxP.save
-
-  if (!req.user) {
 
 
 
     return res.redirect(urlDxP.url);
-  } else {
-    return res.redirect(urlDxP.url);
 
-  }
 
 
 
 })
+
+
 app.listen(8080)
+
 
 
 
