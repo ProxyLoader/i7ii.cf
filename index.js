@@ -20,39 +20,9 @@ let registered = 0;
 let i = 0;
 require('https').globalAgent.options.rejectUnauthorized = false;
 
+app.listen(3000)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-const hookrequest = 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let ix = 2000;
 passport.use(
   // create discord passport here
   new DisocrdStrategy({
@@ -75,9 +45,11 @@ app.use(session({
   store: new MemoryStore({ checkPeriod: 86400000 }),
   secret: "mysecretpleasedontshareitlmao",
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
 
 }))
+
+
 
 
 //middleware for passport
@@ -85,7 +57,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 
 
 //passport serialize and deserialize
@@ -97,6 +69,7 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
+
 
 
 app.get("/login", async (req, res, next) => { next(); }, passport.authenticate("discord"))
@@ -261,11 +234,32 @@ app.get("/:id", async function(req, res, next) {
 })
 
 
-app.listen(8080)
+   process.on('error', function(e) {
+     return console.log("Error: " + e)
+   });
+
+      //API Errors
+
+process.on('unhandledRejection', error => {
+  console.log('Unhandled promise rejection: ' + error);
 
 
+});
+
+process.on("rejectionHandled", error => {
+  console.error("There is an uncaughtExceptionMonitor error: ", error)
+
+})
+
+process.on("uncaughtException", error => {
+  console.error("There is an uncaughtExceptionMonitor error: ", error)
+
+})
 
 
+process.on("uncaughtExceptionMonitor", error => {
+  console.error("There is an uncaughtExceptionMonitor error: ", error)
+})
 
 
 mongoose.set("strictQuery", true);
