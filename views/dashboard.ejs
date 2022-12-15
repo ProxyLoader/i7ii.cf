@@ -1,15 +1,7 @@
 
          <%- include("../components/loadLibrary.ejs") -%>
 
-
-
-
-
-
-
-
-
-<title>I7ii.cf | Dashboard</title>
+<title>I7ii.cf | Create</title>
     <link rel="icon" type="image/png" href="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" sizes="48x48">
 
 <div class="formbold-main-wrapper">
@@ -76,8 +68,17 @@
         </div>
       </div>
       
-      <button class="formbold-btn">Create now!</button>
+      <button class="formbold-btn" id="woo2MVJGWelwQn4CAZDlXoiKwpxrxDWgNtPdxbtxJUj2azmQhi" onclick="disable()">Create now!</button>
       <a class="formbold-btn" href="/list" style="color: #ffff text-decoration: none">Go list!</a>
+
+      <script>
+
+        async function disable(){
+        setTimeout(function(){
+                   document.getElementById("woo2MVJGWelwQn4CAZDlXoiKwpxrxDWgNtPdxbtxJUj2azmQhi").disabled = true;
+        }, 200);
+        }
+      </script>
     </form>
   </div>
 </div>
