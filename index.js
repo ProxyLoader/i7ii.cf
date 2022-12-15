@@ -14,13 +14,23 @@ const passport = require("passport");
 const mongoose = require("mongoose")
 const urlSCH = require("./schema/url-schema")
 
+var errorHandler = require('errorhandler');
+
+
 
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
 require('https').globalAgent.options.rejectUnauthorized = false;
 
+
+let ix = 0;
+    errorHandler.title = "Something error";
+    app.use(errorHandler());
+
 app.listen(3000)
+
+
 
 
 passport.use(
