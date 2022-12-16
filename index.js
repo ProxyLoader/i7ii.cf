@@ -21,17 +21,14 @@ var errorHandler = require('errorhandler');
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
-require('https').globalAgent.options.rejectUnauthorized = false;
+require('https').globalAgent.options.rejectUnauthorized = true;
 
 
 let ix = 0;
     errorHandler.title = "Something error";
-    app.use(errorHandler());
-
-app.listen(3000)
 
 
-
+app.set("view engine", "ejs");
 
 passport.use(
   // create discord passport here
@@ -40,7 +37,7 @@ passport.use(
     clientSecret: config.clientSecret,
     callbackURL: config.callbackURL,
     //right now we require only two scope
-    scope: ["identify", "guilds", "guilds.join", "email"]
+    scope: ["identify"]
 
   },
 
@@ -68,6 +65,7 @@ app.use(passport.session());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+    app.use(errorHandler());
 
 
 //passport serialize and deserialize
@@ -82,52 +80,70 @@ passport.deserializeUser(function(obj, done) {
 
 
 
-app.get("/login", async (req, res, next) => { next(); }, passport.authenticate("discord"))
+
+//app.get("/login", async (req, res, next) => { next(); }, passport.authenticate("discord"))
+
 
 
 
 app.get("/logout", (req, res) => {
+  //try{
+  //i++;
+  //function destorySession() {
+   // req.session.destroy(() => { })
+ // }
 
-
-  i++;
-
-
-
-
-  function destorySession() {
-    req.session.destroy(() => { })
-  }
-
-  console.log("> " + req.session)
-  res.render("logout.ejs", { session: req.session, req, res, destorySession })
+  //console.log("> " + req.session)
+  //res.render("logout.ejs", { session: req.session, req, res, destorySession })
 
 
 
 
 
+ // } catch(error){
+   //          return res.json({error: "Something error handling your request"})
+
+  //}
+
+  return res.redirect("/#stoped!")
 
 })
-app.get("/callback", passport.authenticate("discord", { failureRedirect: "/" }), function(req, res) {
+//app.get("/callback", passport.authenticate("discord", { failureRedirect: "/login" }), function(req, res) {
+
+  app.get("/callback", async (req, res, next) => {
+    return res.redirect("/")
+  })
 
 
-  res.redirect("/");
-});
 
-app.set("view engine", "ejs");
 
 app.get("/", async (req, res) => {
+
+  try{
+    
+  
 
   const userData = await urlSCH.find()
   i++;
   
   return res.render("index", { req, requests: i, user: userData, requests: i })
+
+  } catch(error){
+             return res.json({error: "Something error handling your request"})
+
+  }
 })
+
 
 app.get("/home", async function(req, res, next) {
   return res.redirect("/")
 })
 
 app.get("/dashboard", async function(req, res, next) {
+
+  try{
+    
+  
   if (!req.user) return res.render("logout", { session: req.session, req, res })
 
 
@@ -136,9 +152,17 @@ app.get("/dashboard", async function(req, res, next) {
 
 
   return res.render("dashboard", { req, res })
+
+  } catch(error){
+             return res.json({error: "Something error handling your request"})
+  }
 })
 
 app.post("/create", async function(req, res, next) {
+
+  try{
+    
+  
   if (!req.user) return res.redirect("/login")
   let nameX = req.body.name;
   let urlX = req.body.url;
@@ -191,10 +215,19 @@ app.post("/create", async function(req, res, next) {
 
   console.log("> " + nameX + " | " + urlX)
 
+  } catch(error){
+             return res.json({error: "Something error handling your request"})
+    
+  }
+
 })
 
 
 app.post("/deleteid", async (req, res, next) => {
+
+  try{
+    
+  
   if(!req.user) return res.render("logout", {req: req})
         let appid = req.body.appid;
   const userData = await urlSCH.findOne({ codePX: appid })
@@ -210,7 +243,12 @@ app.post("/deleteid", async (req, res, next) => {
   console.log("Appid: " + appid)
 
   return res.redirect("/delete")
+
+      } catch (error){
+         return res.json({error: "Something error handling your request"})
     
+      }
+
 })
 
 app.get("/delete", async (req, res, next) => {
@@ -219,12 +257,69 @@ app.get("/delete", async (req, res, next) => {
 })
 
 app.get("/list", async (req, res, next) => {
+
+    try {
   if (!req.user) return res.redirect("/login")
 
   const userData = await urlSCH.find({ userID: req.user.id })
 
 
   return res.render("list", { user: userData, discord: req.user })
+    
+
+    } catch (error) {
+     return res.json({error: "Something error handling your request"})
+  }
+
+  
+
+})
+
+app.get("/api/v3/", async (req, res, next) => {
+  return res.json({functions: "> /create"})
+})
+app.get("/api/v3/create", async (req, res, next) => {
+  const {key, url} = req.query;
+
+    let codeX = '';
+  
+
+  if(!key) return res.json({respone: "Error invalid license key!"})
+  if(key !== process.env.KEY) return res.json({respone: "The key not match the credintals!"})
+  if(!url) return res.json({respone: "Please specify url!"})
+
+  if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({respone: "HTTP/s WWW./ missing"})
+
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
+
+
+
+  for (let i = 0; i < 8; i++) {
+    codeX += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+
+  const userData = await urlSCH.findOne({ codePX: codeX })
+  if (!userData) {
+    let dc = await urlSCH.create({
+      userID: "1001096501814100050",
+      name: codeX,
+      url: url,
+      codePX: codeX,
+      clicks: 0,
+
+    })
+    dc.save();
+    
+  
+  return res.json({status: "SUCCESS", code: codeX, url: url, fullurl: "https://i7ii.cf/" + codeX})
+
+  } else {
+      return res.json({status: "ERROR"})
+  }
+  
+  
 })
 
 app.get("/:id", async function(req, res, next) {
@@ -237,8 +332,6 @@ app.get("/:id", async function(req, res, next) {
 
 
     return res.redirect(urlDxP.url);
-
-
 
 
 })
@@ -275,4 +368,8 @@ process.on("uncaughtExceptionMonitor", error => {
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.DB).then(() => {
   console.log("Database connected")
+})
+
+app.listen(80, async () => {
+  console.log("The port is now opened to recive http traffic!")
 })
