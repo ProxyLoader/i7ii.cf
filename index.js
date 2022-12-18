@@ -233,11 +233,12 @@ app.post("/create", async function(req, res, next) {
 
   console.log("> " + nameX + " | " + urlX)
 
+  }
+    
   } catch(error){
              return res.json({error: "Something error handling your request"})
-    
-  }
 
+  }
 })
 
 
@@ -345,52 +346,29 @@ app.get("/:id", async function(req, res, next) {
   if (!urlDxP) return res.render("error")
 
   if (!urlDxP.url.includes("https://") && !urlDxP.url.includes("www.")) return res.redirect("https://" + urlDxP.url)
-
-
   console.log("Someone clicked! the image or the link")
     return res.redirect(urlDxP.url);
-
-
 })
-
-
    process.on('error', function(e) {
      return console.log("Error: " + e)
    });
-
       //API Errors
-
 process.on('unhandledRejection', error => {
   console.log('Unhandled promise rejection: ' + error);
-
-
-});
-
+})
 process.on("rejectionHandled", error => {
   console.error("There is an uncaughtExceptionMonitor error: ", error)
-
 })
-
 process.on("uncaughtException", error => {
   console.error("There is an uncaughtExceptionMonitor error: ", error)
-
 })
-
-
 process.on("uncaughtExceptionMonitor", error => {
   console.error("There is an uncaughtExceptionMonitor error: ", error)
 })
-
-
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.DB).then(() => {
   console.log("Database connected")
 })
-
-
-
-
-
 app.listen(80, async () => {
   console.log("The port is now opened to recive http traffic!")
 })
