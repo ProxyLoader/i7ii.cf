@@ -182,7 +182,7 @@ app.post("/create", async function(req, res, next) {
 
 
 
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
 
@@ -203,7 +203,25 @@ app.post("/create", async function(req, res, next) {
 
 
   } else {
-    res.json({ this: "Please try again something went error!" })
+
+      for (let i = 0; i < 5; i++) {
+    codeX += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+
+  const userData = await urlSCH.findOne({ codePX: codeX })
+  if (!userData) {
+    let dc = await urlSCH.create({
+      userID: req.user.id,
+      name: nameX,
+      url: urlX,
+      codePX: codeX,
+      clicks: 0,
+
+    })
+    dc.save();
+
+    
     setTimeout(function() {
       res.redirect("/dashboard")
     }, 1500);
@@ -295,7 +313,7 @@ app.get("/api/v3/create", async (req, res, next) => {
 
 
 
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
 
@@ -329,8 +347,7 @@ app.get("/:id", async function(req, res, next) {
   if (!urlDxP.url.includes("https://") && !urlDxP.url.includes("www.")) return res.redirect("https://" + urlDxP.url)
 
 
-
-
+  console.log("Someone clicked! the image or the link")
     return res.redirect(urlDxP.url);
 
 
@@ -369,6 +386,10 @@ mongoose.set("strictQuery", true);
 mongoose.connect(process.env.DB).then(() => {
   console.log("Database connected")
 })
+
+
+
+
 
 app.listen(80, async () => {
   console.log("The port is now opened to recive http traffic!")
