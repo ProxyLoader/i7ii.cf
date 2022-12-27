@@ -13,15 +13,14 @@ const passport = require("passport");
 
 const mongoose = require("mongoose")
 const urlSCH = require("./schema/url-schema")
-
 var errorHandler = require('errorhandler');
+const axios = require("axios")
 
 
 
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
-require('https').globalAgent.options.rejectUnauthorized = true;
 
 
 let ix = 0;
@@ -34,10 +33,10 @@ passport.use(
   // create discord passport here
   new DisocrdStrategy({
     clientID: config.clientID,
-    clientSecret: config.clientSecret,
+    clientSecret: "",
     callbackURL: config.callbackURL,
     //right now we require only two scope
-    scope: ["identify"]
+    scope: ["identify", "guilds"]
 
   },
 
@@ -78,41 +77,6 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-
-
-
-//app.get("/login", async (req, res, next) => { next(); }, passport.authenticate("discord"))
-
-
-
-
-app.get("/logout", (req, res) => {
-  //try{
-  //i++;
-  //function destorySession() {
-   // req.session.destroy(() => { })
- // }
-
-  //console.log("> " + req.session)
-  //res.render("logout.ejs", { session: req.session, req, res, destorySession })
-
-
-
-
-
- // } catch(error){
-   //          return res.json({error: "Something error handling your request"})
-
-  //}
-
-  return res.redirect("/#stoped!")
-
-})
-//app.get("/callback", passport.authenticate("discord", { failureRedirect: "/login" }), function(req, res) {
-
-  app.get("/callback", async (req, res, next) => {
-    return res.redirect("/")
-  })
 
 
 
@@ -160,6 +124,9 @@ app.get("/dashboard", async function(req, res, next) {
 
 app.post("/create", async function(req, res, next) {
 
+
+  let timeMilli = Math.floor(Date.now() / 1000)
+  
   try{
     
   
@@ -190,12 +157,14 @@ app.post("/create", async function(req, res, next) {
   const userData = await urlSCH.findOne({ codePX: codeX })
   if (!userData) {
     let dc = await urlSCH.create({
+      requestIP: req.ip,
       userID: req.user.id,
       name: nameX,
       url: urlX,
       codePX: codeX,
       clicks: 0,
-
+      createdMilli: timeMilli,
+      createdAt: new Date().toUTCString(),
     })
     dc.save();
 
@@ -207,16 +176,19 @@ app.post("/create", async function(req, res, next) {
       for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
-
+    
 
   const userData = await urlSCH.findOne({ codePX: codeX })
   if (!userData) {
     let dc = await urlSCH.create({
+      requestIP: req.ip,
       userID: req.user.id,
       name: nameX,
       url: urlX,
       codePX: codeX,
       clicks: 0,
+      createdMilli: timeMilli,
+      createdAt: new Date().toUTCString(),
 
     })
     dc.save();
@@ -297,17 +269,19 @@ app.get("/list", async (req, res, next) => {
 app.get("/api/v3/", async (req, res, next) => {
   return res.json({functions: "> /create"})
 })
+
 app.get("/api/v3/create", async (req, res, next) => {
   const {key, url} = req.query;
 
     let codeX = '';
   
 
+  
   if(!key) return res.json({respone: "Error invalid license key!"})
   if(key !== process.env.KEY) return res.json({respone: "The key not match the credintals!"})
   if(!url) return res.json({respone: "Please specify url!"})
 
-  if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({respone: "HTTP/s WWW./ missing"})
+  if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({status: "ERROR" , respone: "HTTP/s WWW./ missing"})
 
   
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
@@ -318,17 +292,25 @@ app.get("/api/v3/create", async (req, res, next) => {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
 
+  if(url.includes("xnx") || url.includes("porn") || url.includes("sex") || url.includes("gay") || url.includes("xnx") || url.includes("lgbtq")) return res.json({status: "ERROR", content: "Blocked cause contains nfsw"})
+  
 
-  const userData = await urlSCH.findOne({ codePX: codeX })
+  const userData = await urlSCH.findOne({ codePX: codeX })  
 
+  
   if (!userData) {
 
+
+      let timeMilli = Math.floor(Date.now() / 1000)
     
     let dc = await urlSCH.create({
+      requestIP: req.ip,
       userID: "1001096501814100050",
       name: codeX,
       url: url,
       codePX: codeX,
+      createdMilli: timeMilli,
+      createdAt: new Date().toUTCString(),
       clicks: 0,
 
     })
@@ -339,11 +321,20 @@ app.get("/api/v3/create", async (req, res, next) => {
 
   } else {
     
-      return res.json({status: "ERROR"})
+      return res.json({status: "ERROR", content: "Error generating code!"})
   }
   
   
 })
+
+app.get("/api/v3/info/:code", async (req, res, next) => {
+  let urlDxP = await urlSCH.findOne({ codePX: req.params.code })
+  if (!urlDxP) return res.json({status: "ERROR", content: "No data founded about this code!"})
+
+  
+  return res.json({status: "SUCCESS", userID: urlDxP.userID, clicks: urlDxP.clicks.toString(), full: urlDxP.url, createdMilli: urlDxP.createdMilli, createdAt: urlDxP.createdAt})
+})
+
 
 app.get("/:id", async function(req, res, next) {
   let urlDxP = await urlSCH.findOne({ codePX: req.params.id })
@@ -351,7 +342,9 @@ app.get("/:id", async function(req, res, next) {
 
   if (!urlDxP.url.includes("https://") && !urlDxP.url.includes("www.")) return res.redirect("https://" + urlDxP.url)
 
-
+  urlDxP.clicks++
+  urlDxP.save()
+  
   console.log("Someone clicked! the image or the link")
     return res.redirect(urlDxP.url);
 
@@ -396,6 +389,6 @@ mongoose.connect(process.env.DB).then(() => {
 
 
 
-app.listen(80, async () => {
+app.listen(8000, async () => {
   console.log("The port is now opened to recive http traffic!")
 })
