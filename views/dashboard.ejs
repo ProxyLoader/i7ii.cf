@@ -1,9 +1,30 @@
 
-         <%- include("../components/loadLibrary.ejs") -%>
+
+
+
+
+
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="me" href="#">
+    <link rel="canonical" href="#">
+    <link rel="icon" type="image/png" href="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" sizes="48x48">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    
+    
+
+
 
 <title>I7ii.cf | Create</title>
     <link rel="icon" type="image/png" href="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" sizes="48x48">
 
+
+           
 <div class="formbold-main-wrapper">
   <!-- Author: FormBold Team -->
   <!-- Learn More: https://formbold.com -->
@@ -35,7 +56,8 @@
     <path d="M43.1255 200.394H16.9219C16.4191 200.394 15.9264 200.253 15.5002 199.986C15.0739 199.72 14.7313 199.339 14.5116 198.888L8.80661 187.177C8.6074 186.769 8.51542 186.317 8.53936 185.864C8.5633 185.411 8.70236 184.971 8.94344 184.586C9.18453 184.201 9.51971 183.884 9.91743 183.664C10.3152 183.445 10.7623 183.33 11.2169 183.33H48.831C49.2855 183.33 49.7327 183.445 50.1304 183.664C50.5282 183.884 50.8633 184.201 51.1044 184.586C51.3455 184.971 51.4846 185.411 51.5085 185.864C51.5324 186.317 51.4405 186.769 51.2413 187.177L45.5363 198.888C45.3165 199.34 44.974 199.721 44.5477 199.987C44.1215 200.253 43.6288 200.394 43.126 200.394L43.1255 200.394Z" fill="#E5E5E5"/>
     </svg>
 
-    <form action="/create" method="POST">
+    
+
       <div class="formbold-form-title">
         <h2 class="">Create your link</h2>
         <p>
@@ -68,18 +90,61 @@
         </div>
       </div>
       
-      <button class="formbold-btn" id="woo2MVJGWelwQn4CAZDlXoiKwpxrxDWgNtPdxbtxJUj2azmQhi" onclick="disable()">Create now!</button>
-      <a class="formbold-btn" href="/list" style="color: #ffff text-decoration: none">Go list!</a>
+      <button class="btn btn-success" id="woo2MVJGWelwQn4CAZDlXoiKwpxrxDWgNtPdxbtxJUj2azmQhi" onclick="disable()">Create now!</button>
+      <button class="btn btn-success" style="color: #ffff text-decoration: none" onclick="setTimeout(location.href = '/list', 1000)">Go list!</button>
 
+
+
+      <div class="alert alert-success d-none" role="alert" id="alert-success" style="margin: 20px"></div>
+      <div class="alert alert-danger d-none" role="alert" id="alert-danger" style="margin: 20px"></div>
+
+
+      
+      
+      <style> 
+
+        * {
+          transition: 0.9s
+        }
+        
+      </style>
+      
+      
       <script>
 
-        async function disable(){
-        setTimeout(function(){
-                   document.getElementById("woo2MVJGWelwQn4CAZDlXoiKwpxrxDWgNtPdxbtxJUj2azmQhi").disabled = true;
-        }, 200);
+        async function disable() {
+          
+                  let name = document.getElementById("name").value
+        let url = document.getElementById("url").value
+          const alert = document.getElementById("alert-success")
+
+        axios.post('/create', {
+    name: name,
+    url: url,
+      }).then(function (response) {
+
+          if(response.data.status == "SUCCESS"){
+            
+              $("#alert-success").text("Your link has been shrinked with success! Visit: " + response.data.full)
+                $("#alert-success").removeClass("d-none")
+          } else if(response.data.status == "ERROR"){
+                        
+              $("#alert-danger").text("Falied: " + response.data.content)
+                $("#alert-danger").removeClass("d-none")
+          }
+          
+
+
+          
+    console.log(response.data);
+
+  })
+        
+        
+
+          
         }
       </script>
-    </form>
   </div>
 </div>
 <style>
@@ -221,6 +286,7 @@
     color: white;
     cursor: pointer;
     margin-top: 25px;
+    margin-right: 20px;
   }
   .formbold-btn:hover {
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
