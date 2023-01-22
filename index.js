@@ -15,8 +15,9 @@ const mongoose = require("mongoose")
 const urlSCH = require("./schema/url-schema")
 var errorHandler = require('errorhandler');
 const axios = require("axios")
-
-
+const cookieParser = require('cookie-parser');
+const bodyParser = require("body-parser")
+const crypto = require("crypto")
 
 const config = require("./config.json")
 let registered = 0;
@@ -28,24 +29,10 @@ let ix = 0;
 
 
 app.set("view engine", "ejs");
+app.use(cookieParser());
+app.use(bodyParser.json());
 
-passport.use(
-  // create discord passport here
-  new DisocrdStrategy({
-    clientID: config.clientID,
-    clientSecret: "",
-    callbackURL: config.callbackURL,
-    //right now we require only two scope
-    scope: ["identify", "guilds"]
-
-  },
-
-    function(accessToken, refreshToken, profile, done) {
-      process.nextTick(function() {
-        return done(null, profile);
-      });
-    })
-)
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
   store: new MemoryStore({ checkPeriod: 86400000 }),
@@ -57,27 +44,21 @@ app.use(session({
 
 
 
-
-//middleware for passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-    app.use(errorHandler());
-
-
-//passport serialize and deserialize
-passport.serializeUser(function(user, done) {
-
-  done(null, user);
-});
-
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+app.use(function(err, req, res, next) {
+    console.log(err)
+  res.status(200).render('error')
 });
 
 
+let limitRDF = 500
+
+const createToken = (username, password) => {
+    const usernameHash = crypto.createHash("sha256").update(username).digest("base64");
+    const passwordHash = crypto.createHash("sha256").update(password).digest("base64");
+    const randomString = crypto.randomBytes(64).toString("base64");
+    const token = `${usernameHash}.${passwordHash}.${randomString}`;
+    return token;
+};
 
 
 
@@ -87,11 +68,19 @@ app.get("/", async (req, res) => {
     
   
 
-  const userData = await urlSCH.find()
+    const token = req.cookies.token
   i++;
-  
-  return res.render("index", { req, requests: i, user: userData, requests: i })
 
+    if(!token) return res.redirect("/login")
+    
+    let userProfile = await urlSCH.findOne({token: token})
+    if(!userProfile) console.log("No profile matched")
+    
+    console.log(userProfile)
+  
+return res.render("index", { req, requests: i, userProfile: userProfile })
+
+  
   } catch(error){
              return res.json({error: "Something error handling your request"})
 
@@ -106,113 +95,158 @@ app.get("/home", async function(req, res, next) {
 app.get("/dashboard", async function(req, res, next) {
 
   try{
-    
-  
-  if (!req.user) return res.render("logout", { session: req.session, req, res })
 
+    if(!req.cookies.token) return res.redirect("/register")
+
+    let userData = await urlSCH.findOne({token: req.cookies.token})
+    if(!userData) return res.redirect("/login")
+    if(userData.token !== req.cookies.token) return res.json({content: "Invalid access token! (Forbidden Authorization)"})
 
 
   i++;
 
 
-  return res.render("dashboard", { req, res })
+  return res.render("dashboard", { req, res, userData })
 
   } catch(error){
              return res.json({error: "Something error handling your request"})
   }
 })
 
-app.post("/create", async function(req, res, next) {
 
 
-  let timeMilli = Math.floor(Date.now() / 1000)
+
+app.get("/logout", async (req, res, next) => {
+  const token = req.cookies.token
+  let userData = await urlSCH.findOne({token: token})
+  if(!userData) return res.send("You cannot access this page go <a href='/login'>login</a> before you do this action")
   
-  try{
+  return res.render("logout", {userData, res, req})
+})
+
+
+app.get("/login", async (req ,res ,next) => {
+
+ const token = req.cookies.token
+  
+  if(!token) return res.render("login", {req, res})
+
+      let userData = await urlSCH.findOne({token: token})
+
+  
+  if(!userData) return res.render("login", {req, res})
+  if(userData.token !== token) return res.render("login", {req, res})
+  if(userData.token == token) return res.redirect("/")
     
   
-  if (!req.user) return res.redirect("/login")
-  let nameX = req.body.name;
-  let urlX = req.body.url;
-  let codeX = '';
+  
+})
 
-  if (!nameX) return res.json({ error: "Missing name!" })
-  if (!urlX) return res.json({ error: "Missing url!" })
 
-  ix++;
+app.get("/register", async (req ,res ,next) => {
 
-  if(!req.user) return res.redirect("/login")
+  return res.render("register", {req, res})
+})
 
 
 
 
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
 
+app.post("/register", async (req, res) => {
+  const {username, password} = req.body;
+
+  if(!username || !password) return res.send("Please fill the requirements");
+
+  // Check if the username already exists in the database
+  let existingUser = await urlSCH.findOne({username});
+  if (existingUser) return res.json({status: "ERROR", content: "Username already taken, please choose a different one."});
+
+  // Create new user
+  let dc = await urlSCH.create({
+    username: username,
+    password: password,
+    token: createToken(username, password)
+  });
+
+  res.send("User created successfully!");
+});
+
+
+
+
+
+app.post("/login", async (req,res, next) => {
+  
+  console.log(req.body)
+
+  let userData = await urlSCH.findOne({username: req.body.username, password: req.body.password})
+  if(!userData) return res.send("This user could not founded in our databases!")
+  if(!userData.token) return res.send("Really weird no token founded in this account contact support!")
+  
+  res.cookie("token", userData.token)
+
+  return res.redirect("/dashboard")
+  
+})
+
+
+
+app.post("/create", async function(req, res, next) {
+
+      if(req.cookies.rDfWP_DMC_LOP098) return res.json({status: "ERROR", content: "You reach the limit of requests try again after 3 seconds"})
+  
+      if(!req.cookies.token) return res.redirect("/login")
+
+
+  
+    let userData = await urlSCH.findOne({token: req.cookies.token})
+    if(!userData) return res.redirect("/login")
+    if(userData.token !== req.cookies.token) return res.json({status: "ERROR" ,content: "Invalid access token! (Forbidden Authorization)"})  
+
+  const {name, url} = req.body
+
+  if(!name || !url) return res.json({status: "ERROR", content: "Invalid request missing name or url (requirements)"})
+
+    if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({status: "ERROR" , content: "HTTP/s WWW./ missing"})
+    if(url.includes("xnx") || url.includes("porn") || url.includes("sex") || url.includes("gay") || url.includes("xnx") || url.includes("lgbtq")) return res.json({status: "ERROR", content: "Blocked cause contains nfsw"})
+
+
+  
+  
+let codeX = '';
+  
+ const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
+
+  
+  
 
 
   for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
+  
+  
+        let timeMilli = Math.floor(Date.now() / 1000)
 
+  let dc = await urlSCH.create({
+    requestIP: req.ip,
+    name: name,
+    url: url,
+    codePX: codeX,
+    createdMilli: timeMilli,
+    createdAt: new Date().toUTCString(),
+    username: userData.username,
+    token: userData.token,
+  })
 
-  const userData = await urlSCH.findOne({ codePX: codeX })
-  if (!userData) {
-    let dc = await urlSCH.create({
-      requestIP: req.ip,
-      userID: req.user.id,
-      name: nameX,
-      url: urlX,
-      codePX: codeX,
-      clicks: 0,
-      createdMilli: timeMilli,
-      createdAt: new Date().toUTCString(),
-    })
-    dc.save();
+  dc.save();
+  
 
-    res.redirect("/dashboard")
+  res.cookie("rDfWP_DMC_LOP098", "wP9wXa269RQXplTqArPoXm97X=", {maxAge: limitRDF})
 
-
-  } else {
-
-      for (let i = 0; i < 5; i++) {
-    codeX += chars[Math.floor(Math.random() * chars.length)];
-  }
-    
-
-  const userData = await urlSCH.findOne({ codePX: codeX })
-  if (!userData) {
-    let dc = await urlSCH.create({
-      requestIP: req.ip,
-      userID: req.user.id,
-      name: nameX,
-      url: urlX,
-      codePX: codeX,
-      clicks: 0,
-      createdMilli: timeMilli,
-      createdAt: new Date().toUTCString(),
-
-    })
-    dc.save();
-
-    
-    setTimeout(function() {
-      res.redirect("/dashboard")
-    }, 1500);
-  }
-
-
-
-
-
-  console.log("> " + nameX + " | " + urlX)
-
-  }
-    
-  } catch(error){
-             return res.json({error: "Something error handling your request"})
-
-  }
-})
-
+  return res.json({status: "SUCCESS", name: name, url: url, code: codeX, full: "https://i7ii.cf/" + codeX})
+  
+});
 
 app.post("/deleteid", async (req, res, next) => {
 
@@ -243,19 +277,37 @@ app.post("/deleteid", async (req, res, next) => {
 })
 
 app.get("/delete", async (req, res, next) => {
-  if(!req.user) return res.render("logout", {req: req, user: req.user})
-    return res.render("delete", {req: req})
-})
+  const token = req.cookies.token
+  if(!token) return res.redirect("/login")
+  let userData = await urlSCH.findOne({token: token})
+  if(!userData) return res.json({status: "ERROR", content: "This cookie is suspicous or invalid!"})
 
+  const id = req.query.id
+if(!id) return res.json({status: "ERROR", content: "Missing ID (Code) query!"})
+
+  let idData = await urlSCH.findOne({codePX: id})
+  if(!idData) return res.json({status: "ERROR", content: "This ID (Code) is invalid!"}) 
+  if(idData.token !== userData.token) return res.json({status: "ERROR", content: "This ID (Code) is not yours!"})
+
+
+  let deletedCode = await urlSCH.findOneAndDelete({codePX: id})
+if(deletedCode) return res.json({status: "SUCCESS", content: "Code removed successfully"})
+
+
+});
+  
 app.get("/list", async (req, res, next) => {
 
     try {
-  if (!req.user) return res.redirect("/login")
 
-  const userData = await urlSCH.find({ userID: req.user.id })
+  if(!req.cookies.token) return res.redirect("/")
+      
+  const userData = await urlSCH.find({ token: req.cookies.token })
+      if(!userData) return res.json({status: "ERROR", content: "This user is invalid! Try relogin"})
 
+      console.log(userData)
 
-  return res.render("list", { user: userData, discord: req.user })
+  return res.render("list", { user: userData })
     
 
     } catch (error) {
