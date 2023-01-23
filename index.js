@@ -1,3 +1,7 @@
+
+const pm2 = require('pm2');
+
+
 const express = require("express")
 const app = express();
 
@@ -52,13 +56,30 @@ app.use(function(err, req, res, next) {
 
 let limitRDF = 500
 
+
+function generateRandomString() {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 9; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
+
+
 const createToken = (username, password) => {
-    const usernameHash = crypto.createHash("sha256").update(username).digest("base64");
-    const passwordHash = crypto.createHash("sha256").update(password).digest("base64");
+
+
+  let randomChunk = Math.floor(Math.random() * 100000000) + 100
+  
+    const usernameHash = crypto.createHash("sha256").update(username + generateRandomString() ).digest("base64");
+    const passwordHash = crypto.createHash("sha256").update(password + randomChunk).digest("base64");
     const randomString = crypto.randomBytes(64).toString("base64");
     const token = `${usernameHash}.${passwordHash}.${randomString}`;
     return token;
 };
+
 
 
 
@@ -122,23 +143,28 @@ app.get("/logout", async (req, res, next) => {
   return res.render("logout", {userData, res, req})
 })
 
+app.get("/login", async (req, res, next) => {
+  const token = req.cookies.token;
+  let jwt = req.query.jwt;
 
-app.get("/login", async (req ,res ,next) => {
+  // Find the user by token cookie or jwt query parameter
+  let userData;
+  if (token) {
+    userData = await urlSCH.findOne({ token: token });
+  } else if (jwt) {
+    userData = await urlSCH.findOne({ jwt: jwt });
+  }
 
- const token = req.cookies.token
-  
-  if(!token) return res.render("login", {req, res})
+  // If no user is found, render the login page
+  if (!userData) {
+    return res.render("login", { req, res });
+  }
 
-      let userData = await urlSCH.findOne({token: token})
+  // If a user is found, set the token cookie and redirect to the homepage
+  res.cookie("token", userData.token);
+  return res.redirect("/");
+});
 
-  
-  if(!userData) return res.render("login", {req, res})
-  if(userData.token !== token) return res.render("login", {req, res})
-  if(userData.token == token) return res.redirect("/")
-    
-  
-  
-})
 
 
 app.get("/register", async (req ,res ,next) => {
@@ -146,6 +172,11 @@ app.get("/register", async (req ,res ,next) => {
   return res.render("register", {req, res})
 })
 
+
+
+function generateJWT() {
+  return crypto.randomBytes(45).toString('hex');
+}
 
 
 
@@ -159,14 +190,19 @@ app.post("/register", async (req, res) => {
   let existingUser = await urlSCH.findOne({username});
   if (existingUser) return res.json({status: "ERROR", content: "Username already taken, please choose a different one."});
 
+
+  let jwtToken = generateJWT();
   // Create new user
   let dc = await urlSCH.create({
     username: username,
     password: password,
-    token: createToken(username, password)
+    token: createToken(username, password),
+    jwt: jwtToken,
   });
 
-  res.send("User created successfully!");
+  
+  
+  return res.redirect("/login?jwt=" + jwtToken)
 });
 
 
@@ -193,7 +229,7 @@ app.post("/create", async function(req, res, next) {
 
       if(req.cookies.rDfWP_DMC_LOP098) return res.json({status: "ERROR", content: "You reach the limit of requests try again after 3 seconds"})
   
-      if(!req.cookies.token) return res.redirect("/login")
+      if(!req.cookies.token) return res.json({status: "ERROR", content: "Invalid access token! Relogin"})
 
 
   
@@ -389,15 +425,20 @@ app.get("/api/v3/info/:code", async (req, res, next) => {
 app.get("/:id", async function(req, res, next) {
   let urlDxP = await urlSCH.findOne({ codePX: req.params.id })
   if (!urlDxP) return res.render("error")
-
-  if (!urlDxP.url.includes("https://") && !urlDxP.url.includes("www.")) return res.redirect("https://" + urlDxP.url)
-
-  urlDxP.clicks++
-  urlDxP.save()
   
-  console.log("Someone clicked! the image or the link")
-    return res.redirect(urlDxP.url);
 
+  let maliclousLinks = ["iplogger", "grabify"]
+let isMalicious = maliclousLinks.some(link => urlDxP.url.includes(link))
+
+if (isMalicious) {
+    return res.render("warn", { urlDxP: urlDxP });
+} else {
+    urlDxP.clicks++
+    urlDxP.save()
+    return res.redirect(urlDxP.url);
+}
+
+  
 
 })
 
