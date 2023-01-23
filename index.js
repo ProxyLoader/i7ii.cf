@@ -70,15 +70,13 @@ app.get("/", async (req, res) => {
 
     const token = req.cookies.token
   i++;
-
-    if(!token) return res.redirect("/login")
     
     let userProfile = await urlSCH.findOne({token: token})
     if(!userProfile) console.log("No profile matched")
     
     console.log(userProfile)
   
-return res.render("index", { req, requests: i, userProfile: userProfile })
+return res.render("index", { req, requests: i, userProfile: userProfile, token: token })
 
   
   } catch(error){
