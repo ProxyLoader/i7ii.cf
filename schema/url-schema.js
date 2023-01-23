@@ -19,6 +19,7 @@ const urlschema = new Schema({
   token: {type: String, required: false},
   username: {type: String, required: false},
   password: {type: String, required: false},
+  jwt: {type: String, required: false},
 
 });
 
