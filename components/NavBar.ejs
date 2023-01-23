@@ -33,9 +33,13 @@
             <img src="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" width="30" height="30" class="d-inline-block align-top" alt="Logo">
             I7ii.cf
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+
+
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+</button>
+    
+      
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
@@ -71,6 +75,20 @@
         
         </div>
     </nav>
+
+
+                <script>
+    $(document).ready(function(){
+        $('.navbar-toggler').click(function(){
+            if($('#navbarNav').hasClass('show')) {
+                $('#navbarNav').collapse('hide');
+            } else {
+                $('#navbarNav').collapse('show');
+            }
+        });
+    });
+</script>
+
 
     
   </body>
