@@ -20,13 +20,33 @@
              }
            </style>
                <div class="container py-5" >
-        <h1>🎉 Congratulation <%= userProfile.username %> </h1>
+
+
+
+                 <% if(!token || !userProfile) {  %>
+
+                    <h1>🕒 What are you waiting for? %> </h1>
+        <p>Create an account and get access to our services features Create Manage disover and much more!</p>
+
+                 <center>
+                                    <button class="btn btn-success" onclick="location.href = '/login'"style="margin: 30px">Get Started!</button>
+
+                 </center>
+                   <% } else {%>
+                 
+  
+                      <h1>🎉 Congratulation <%= userProfile.username %> </h1>
         <p>You have an active account right now! Click button bellow and get started!</p>
 
                  <center>
                                     <button class="btn btn-success" onclick="location.href = '/dashboard'"style="margin: 30px">Get Started!</button>
 
                  </center>
+
+         
+
+                     <%  } %>
+       
     </div>
   
 
