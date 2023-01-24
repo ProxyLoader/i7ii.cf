@@ -1,34 +1,10 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const pm2 = require('pm2');
-
-
 const express = require("express")
 const app = express();
-
-
-
 
 const Cryptr = require("cryptr")
 const cryptr = new Cryptr('myTotallySecretKey');
 const session = require("express-session");
 const MemoryStore = require("memorystore")(session);
-const DisocrdStrategy = require("passport-discord").Strategy;
-const passport = require("passport");
 
 const mongoose = require("mongoose")
 const urlSCH = require("./schema/url-schema")
@@ -41,6 +17,7 @@ const crypto = require("crypto")
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
+
 
 
 let ix = 0;
@@ -60,6 +37,8 @@ app.use(session({
   saveUninitialized: false,
 
 }))
+
+
 
 
 
@@ -374,7 +353,7 @@ app.get("/api/v3/create", async (req, res, next) => {
 
   
   if(!key) return res.json({respone: "Error invalid license key!"})
-  if(key !== process.env.KEY) return res.json({respone: "The key not match the credintals!"})
+  if(key !== "EXkS@h=Z!@!hY8f") return res.json({respone: "The key not match the credintals!"})
   if(!url) return res.json({respone: "Please specify url!"})
 
   if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({status: "ERROR" , respone: "HTTP/s WWW./ missing"})
@@ -489,14 +468,21 @@ process.on("uncaughtExceptionMonitor", error => {
 
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.DB).then(() => {
+mongoose.connect("mongodb+srv://i7ii7:ioNLcAamoU0gznRP@cluster0.qzcgm5a.mongodb.net/URLRedirect").then(() => {
   console.log("Database connected")
 })
 
 
 
 
-
-app.listen(8000, async () => {
+app.get("/terms-of-service", async (req, res, next) => {
+    
+   
+    
+    return res.render("terms")
+    
+});
+    
+app.listen(25615, async () => {
   console.log("The port is now opened to recive http traffic!")
 })
