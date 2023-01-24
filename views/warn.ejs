@@ -1,31 +1,55 @@
-         <%- include("../components/loadLibrary.ejs") -%>
 
 
+    
 
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  
            <title>I7ii.cf | We caring about security </title>
     <link rel="icon" type="image/png" href="https://www.svgrepo.com/show/191995/magic-wand-halloween.svg" sizes="48x48">
-
-           
-  <div class="container-fluid" style="background-color: #2222">
-
-
-      <center>
-
-              
-      <h2 style="margin: 60">⚠️ WARNING (Maliclous)</h2>
-
-      <p class="ui-text-intro" style="color: #44444;">Logging IP addresses and locations can potentially reveal sensitive information about users such as geographic location and identity, leaving them vulnerable to targeted attacks, privacy breaches and other security risks (<%= urlDxP.url %>)</p>
-
-                    <button class="btn btn-outline-success" onclick="location.href = '/home' ">Protect Me!</button>
-
-              <button class="btn btn-outline-danger" onclick="location.href = '<%= urlDxP.url %>' ">Process!</button>
-              
+ 
+  <style>
+    /* Set background color similar to Discord */
+    body {
+      background-color: #36393f;
+    }
+    /* Center and style the message */
+    .warning-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+    }
+    h4 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.2rem;
+    }
+    .card {
+      background-color: rgba(255,255,255,0.2);
+      padding: 2rem;
+      border-radius: 1rem;
+    }
+  </style>
+  <title>Warning</title>
+</head>
+<body>
+  <div class="warning-message">
+    <div class="card">
+        <h4 class="card-title" style="margin: 20px;">Warning!</h4>
+        <p class="card-text" style="margin: 20px;">IP logging can be malicious as it can be used to track and locate individuals without their consent, potentially leading to harm.</p>
         
-      </center>  
-
-      
-    
-        
-
+        <button class="btn btn-danger" onclick="location.href = '<%= urlDxP.url %>' "> Process! </button> 
+                <button class="btn btn-success" onclick="location.href = '/home' " style="margin: 10px;"> Take me back! </button> 
+    </div>
   </div>
+</body>
+</html>
