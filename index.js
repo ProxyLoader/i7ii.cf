@@ -1,4 +1,19 @@
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const pm2 = require('pm2');
 
 
@@ -47,11 +62,6 @@ app.use(session({
 }))
 
 
-
-app.use(function(err, req, res, next) {
-    console.log(err)
-  res.status(200).render('error')
-});
 
 
 let limitRDF = 500
@@ -441,6 +451,13 @@ if (isMalicious) {
   
 
 })
+
+
+
+app.use(function(err, req, res, next){
+  res.status(err.status || 500);
+  res.send({ error: err.message });
+});
 
 
    process.on('error', function(e) {
