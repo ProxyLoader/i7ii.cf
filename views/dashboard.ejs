@@ -118,28 +118,23 @@
         let url = document.getElementById("url").value
           const alert = document.getElementById("alert-success")
 
-        axios.post('/create', {
-    name: name,
-    url: url,
-      }).then(function (response) {
+fetch('/create', {
+  method: 'POST',
+  body: JSON.stringify({ name: name, url: url }),
+  headers: { 'Content-Type': 'application/json' },
+})
+  .then((response) => response.json())
+  .then((data) => {
+    if (data.status === 'SUCCESS') {
+      document.querySelector('#alert-success').textContent = `Your link has been shrinked with success! Visit: ${data.full}`;
+      document.querySelector('#alert-success').classList.remove('d-none');
+    } else if (data.status === 'ERROR') {
+      document.querySelector('#alert-danger').textContent = `Falied: ${data.content}`;
+      document.querySelector('#alert-danger').classList.remove('d-none');
+    }
+    console.log(data);
+  });
 
-          if(response.data.status == "SUCCESS"){
-            
-              $("#alert-success").text("Your link has been shrinked with success! Visit: " + response.data.full)
-                $("#alert-success").removeClass("d-none")
-          } else if(response.data.status == "ERROR"){
-                        
-              $("#alert-danger").text("Falied: " + response.data.content)
-                $("#alert-danger").removeClass("d-none")
-          }
-          
-
-
-          
-    console.log(response.data);
-
-  })
-        
         
 
           
