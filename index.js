@@ -242,7 +242,7 @@ let codeX = '';
 
   
   
-
+if(name.length > 15) return res.json({status: "ERROR", content: "The name should be less than 15"})
 
   for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
@@ -251,6 +251,7 @@ let codeX = '';
   
         let timeMilli = Math.floor(Date.now() / 1000)
 
+       
   let dc = await urlSCH.create({
     requestIP: req.ip,
     name: name,
@@ -483,6 +484,6 @@ app.get("/terms-of-service", async (req, res, next) => {
     
 });
     
-app.listen(25615, async () => {
+app.listen(25439, async () => {
   console.log("The port is now opened to recive http traffic!")
 })
