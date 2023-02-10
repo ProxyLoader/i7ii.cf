@@ -18,7 +18,7 @@ const config = require("./config.json")
 let registered = 0;
 let i = 0;
 
-
+const limitAPI = new Set();
 
 let ix = 0;
     errorHandler.title = "Something error";
@@ -43,8 +43,7 @@ app.use(session({
 
 
 
-let limitRDF = 500
-
+let limitRDF = 1000
 
 function generateRandomString() {
   let result = '';
@@ -216,42 +215,36 @@ app.post("/login", async (req,res, next) => {
 
 app.post("/create", async function(req, res, next) {
 
-      if(req.cookies.rDfWP_DMC_LOP098) return res.json({status: "ERROR", content: "You reach the limit of requests try again after 3 seconds"})
-  
-      if(!req.cookies.token) return res.json({status: "ERROR", content: "Invalid access token! Relogin"})
+  if (!req.cookies.token) return res.json({ status: "ERROR", content: "Invalid access token! Relogin" });
 
+  let userData = await urlSCH.findOne({ token: req.cookies.token });
+  if (!userData) return res.redirect("/login");
+  if (userData.token !== req.cookies.token) return res.json({ status: "ERROR", content: "Invalid access token! (Forbidden Authorization)" });
 
-  
-    let userData = await urlSCH.findOne({token: req.cookies.token})
-    if(!userData) return res.redirect("/login")
-    if(userData.token !== req.cookies.token) return res.json({status: "ERROR" ,content: "Invalid access token! (Forbidden Authorization)"})  
+    if(limitAPI.has(req.cookies.token)) return res.json({status: "ERROR", content: "You are being ratelimited!"})
+  const { name, url } = req.body;
+  if (!name || !url) return res.json({ status: "ERROR", content: "Invalid request missing name or url (requirements)" });
 
-  const {name, url} = req.body
+  if (!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({ status: "ERROR", content: "HTTP/s WWW./ missing" });
+  if (url.includes("xnx") || url.includes("porn") || url.includes("sex") || url.includes("gay") || url.includes("xnx") || url.includes("lgbtq")) return res.json({ status: "ERROR", content: "Blocked cause contains nfsw" });
 
-  if(!name || !url) return res.json({status: "ERROR", content: "Invalid request missing name or url (requirements)"})
+  if (name.length > 15) return res.json({ status: "ERROR", content: "The name should be less than 15" });
 
-    if(!url.startsWith("https://") && !url.startsWith("www.") && !url.endsWith(".")) return res.json({status: "ERROR" , content: "HTTP/s WWW./ missing"})
-    if(url.includes("xnx") || url.includes("porn") || url.includes("sex") || url.includes("gay") || url.includes("xnx") || url.includes("lgbtq")) return res.json({status: "ERROR", content: "Blocked cause contains nfsw"})
+  // Check if the user has created more than 3 names in the past 2 seconds
+  let twoSecondsAgo = Math.floor(Date.now() / 1000) - 2;
+  let nameCount = await urlSCH.countDocuments({
+    token: req.cookies.token,
+    createdMilli: { $gt: twoSecondsAgo }
+  });
+  if (nameCount >= 3) return res.json({ status: "ERROR", content: "Limited reached" });
 
-
-  
-  
-let codeX = '';
-  
- const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
-
-  
-  
-if(name.length > 15) return res.json({status: "ERROR", content: "The name should be less than 15"})
-
+  let codeX = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567891011121314151617';
   for (let i = 0; i < 5; i++) {
     codeX += chars[Math.floor(Math.random() * chars.length)];
   }
-  
-  
-        let timeMilli = Math.floor(Date.now() / 1000)
 
-       
+  let timeMilli = Math.floor(Date.now() / 1000);
   let dc = await urlSCH.create({
     requestIP: req.ip,
     name: name,
@@ -261,16 +254,19 @@ if(name.length > 15) return res.json({status: "ERROR", content: "The name should
     createdAt: new Date().toUTCString(),
     username: userData.username,
     token: userData.token,
-  })
+  });
 
   dc.save();
-  
+    
+    limitAPI.add(req.cookies.token)
+    setTimeout(function(){
+        limitAPI.delete(req.cookies.token)
+    }, limitRDF);
+  return res.json({ status: "SUCCESS", name: name, url: url, code: codeX, full: "https://i7ii.cf/" + codeX });
 
-  res.cookie("rDfWP_DMC_LOP098", "wP9wXa269RQXplTqArPoXm97X=", {maxAge: limitRDF})
 
-  return res.json({status: "SUCCESS", name: name, url: url, code: codeX, full: "https://i7ii.cf/" + codeX})
-  
 });
+
 
 app.post("/deleteid", async (req, res, next) => {
 
