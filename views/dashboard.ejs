@@ -146,7 +146,7 @@ fetch('/create', {
          
          setTimeout(function(){
           getBtn.textContent = "Copy"
-         }, 200);
+         }, 500);
          
           const copyText = document.querySelector('#alert-success-text').textContent.split('Visit: ')[1];
           navigator.clipboard.writeText(copyText);
