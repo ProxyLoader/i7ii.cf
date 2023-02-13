@@ -6,6 +6,10 @@ const cryptr = new Cryptr('myTotallySecretKey');
 const session = require("express-session");
 const MemoryStore = require("memorystore")(session);
 
+const {IP2Proxy} = require("ip2proxy-nodejs");
+
+let ip2proxy = new IP2Proxy();
+
 const mongoose = require("mongoose")
 const urlSCH = require("./schema/url-schema")
 var errorHandler = require('errorhandler');
@@ -69,6 +73,28 @@ const createToken = (username, password) => {
 };
 
 
+
+app.get("*", async (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+          const isCaptchaRoute = req.url.includes("api") || req.url.startsWith("/captcha");
+
+    if(isCaptchaRoute) return next();
+    if(req.cookies.__tlb == "dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_" + ip) return next();
+    
+    if(ip2proxy.isProxy(ip)){
+        return res.render("captcha")
+    } else {
+        return next();
+    }
+    
+});
+
+
+app.post('/captcha', (req, res) => {
+  res.cookie('__tlb', 'dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_' + req.headers['x-forwarded-for'] || req.connection.remoteAddress , { maxAge: 1000 * 60 * 60 * 24 * 30 });
+  res.redirect('/home/#task_completed');
+});
 
 
 app.get("/", async (req, res) => {
