@@ -93,7 +93,8 @@ app.get("*", async (req, res, next) => {
 
 app.post('/captcha', (req, res) => {
   res.cookie('__tlb', 'dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_', { maxAge: 1000 * 60 * 60 * 24 * 30 });
-  res.redirect('/home/#task_completed');
+  if(req.cookies.token) return res.redirect("/home")
+  res.redirect("/login");
 });
 
 
