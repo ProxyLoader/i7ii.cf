@@ -80,7 +80,7 @@ app.get("*", async (req, res, next) => {
           const isCaptchaRoute = req.url.includes("api") || req.url.startsWith("/captcha");
 
     if(isCaptchaRoute) return next();
-    if(req.cookies.__tlb == "dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_" + ip) return next();
+    if(req.cookies.__tlb == "dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_") return next();
     
     if(ip2proxy.isProxy(ip)){
         return res.render("captcha")
@@ -92,7 +92,7 @@ app.get("*", async (req, res, next) => {
 
 
 app.post('/captcha', (req, res) => {
-  res.cookie('__tlb', 'dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_' + req.headers['x-forwarded-for'] || req.connection.remoteAddress , { maxAge: 1000 * 60 * 60 * 24 * 30 });
+  res.cookie('__tlb', 'dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_', { maxAge: 1000 * 60 * 60 * 24 * 30 });
   res.redirect('/home/#task_completed');
 });
 
