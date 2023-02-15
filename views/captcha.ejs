@@ -1,27 +1,96 @@
 <!DOCTYPE html>
+
+
+
+         <%- include("../components/loadLibrary.ejs") -%>
+
 <html>
   <head>
     <title>Captcha Page</title>
     <!-- include bootstrap css -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
   </head>
   <body>
-    <div class="container" style="display: flex; flex-direction: column; align-items: center;">
-      <h1 class="mt-5">Please complete the captcha</h1>
-      <form action="/captcha" method="post">
-        <!-- add your captcha implementation here -->
-        <button id="verify-button" type="submit" class="btn btn-primary mt-3">Verify</button>
-      </form>
-    </div>
+  
+ 
+ <div class="container d-flex flex-column justify-content-center align-items-center" style="height: 100vh;">
+ 
+
+<h1 id="reviewing-text" class="mt-5"><img src="https://www.svgrepo.com/show/362146/shield-ok.svg" width="50" height="50" alt="shield icon"> Reviewing your connection!</h1>
+
+ 
+  <form action="/captcha" method="post">
+    <!-- add your captcha implementation here -->
+    <button id="verify-button" type="submit" class="btn btn-primary mt-3">Verify</button>
+  </form>
+</div>
+
+<center>
+<footer id="ip-footer" style="background-color: #f8f9fa; padding: 10px;">
+  <p>We notice that you are using some sort of VPN. <a id="reveal-ip" style="color: #orange;" href="#">Click to reveal your IP address.</p></p>
+  <p id="ip-address" style="display: none;"> <span id="ip-value"></span></p>
+</footer>
+</center>
+
+
+  
     <!-- include jquery and bootstrap js -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    
+    
     <!-- disable button after submit -->
-    <script>
-      $('form').submit(function() {
-        $('#verify-button').attr('disabled', true);
+ 
+ 
+ <script>
+  // disable button after submit
+  $('#verify-button').on('click', function() {
+    $(this).text("Verifying...");
+  });
+
+  $('form').submit(function(event) {
+    event.preventDefault(); // prevent the form from submitting and the page from reloading
+    
+
+$('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-ok.svg' width='50' height='50' alt='shield icon'> Checking for malicious activity..."); 
+
+    // make axios request here
+    axios.post('/captcha')
+      .then(response => {
+      $('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-ok.svg' width='50' height='50' alt='shield icon'> Your connection has been reviewed!"); 
+
+        location.reload(); // reload the page after the request is complete
+      })
+      .catch(error => {
+        console.error(error);
+        // handle error here
       });
-    </script>
+  });
+  
+  
+  $('#reveal-ip').on('click', function() {
+    event.preventDefault(); // prevent the default behavior of the link
+
+  $('#ip-address').toggle();
+  $('#ip-value').text("<%= ip %>");
+});
+
+</script>
+
+
+ 
+    
+    <style>
+    @media (max-width: 767px) {
+  img {
+    display: none;
+  }
+  }
+
+    </style>
   </body>
 </html>
