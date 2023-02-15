@@ -17,6 +17,7 @@ const axios = require("axios")
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser")
 const crypto = require("crypto")
+const rateLimit = require('express-rate-limit');
 
 const config = require("./config.json")
 let registered = 0;
@@ -42,8 +43,12 @@ app.use(session({
 
 }))
 
-
-
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('*', limiter);
 
 
 
@@ -79,19 +84,28 @@ app.get("*", async (req, res, next) => {
 
           const isCaptchaRoute = req.url.includes("api") || req.url.startsWith("/captcha");
 
+        console.log("[Logger] IP: " + ip + " -> " + req.method)
+
+    
     if(isCaptchaRoute) return next();
     if(req.cookies.__tlb == "dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_") return next();
     
+    
+    
+    
     if(ip2proxy.isProxy(ip)){
-        return res.render("captcha")
+        return res.render("captcha", {ip: ip})
     } else {
         return next();
     }
-    
+     
 });
 
 
 app.post('/captcha', (req, res) => {
+        
+    
+    
   res.cookie('__tlb', 'dHJ1ZXllYWhoYXNiZWVudmVyaWZpZWRvbm91cnNlcnZpY2Vz_', { maxAge: 1000 * 60 * 60 * 24 * 30 });
   if(req.cookies.token) return res.redirect("/home")
   res.redirect("/login");
@@ -110,7 +124,6 @@ app.get("/", async (req, res) => {
     let userProfile = await urlSCH.findOne({token: token})
     if(!userProfile) console.log("No profile matched")
     
-    console.log(userProfile)
   
 return res.render("index", { req, requests: i, userProfile: userProfile, token: token })
 
