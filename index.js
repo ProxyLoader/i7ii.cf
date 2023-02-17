@@ -211,6 +211,8 @@ function generateJWT() {
 
 
 
+  
+
 
 app.post("/register", async (req, res) => {
   const {username, password} = req.body;
@@ -220,7 +222,7 @@ app.post("/register", async (req, res) => {
   // Check if the username already exists in the database
   let existingUser = await urlSCH.findOne({username});
   if (existingUser) return res.json({status: "ERROR", content: "Username already taken, please choose a different one."});
-
+    if(password.length < 8) return res.json({status: "ERROR", content: "Password Length should be bigger than 8"})
 
   let jwtToken = generateJWT();
   // Create new user
@@ -231,8 +233,7 @@ app.post("/register", async (req, res) => {
     jwt: jwtToken,
   });
 
-  
-  
+
   return res.json({status: "SUCCESS", content: "Your account has been created! " + username, jwt: jwtToken})
 });
 
