@@ -42,27 +42,27 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     
-    
-    <!-- disable button after submit -->
- 
+
+
  
  <script>
   // disable button after submit
-  $('#verify-button').on('click', function() {
-    $(this).text("Verifying...");
-  });
 
   $('form').submit(function(event) {
     event.preventDefault(); // prevent the form from submitting and the page from reloading
     
-
+      $('#verify-button').on('click', function() {
+      $(this).text("Verifying...").attr("disabled", true)
+  });
+    
 $('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-ok.svg' width='50' height='50' alt='shield icon'> Checking for malicious activity..."); 
-
     // make axios request here
     axios.post('/captcha')
       .then(response => {
-      $('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-ok.svg' width='50' height='50' alt='shield icon'> Your connection has been reviewed!"); 
+            $(this).text("Verifying...").attr("disabled", false)
+          $(this).text("Verifying...");
 
+      $('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-ok.svg' width='50' height='50' alt='shield icon'> Your connection has been reviewed!"); 
         location.reload(); // reload the page after the request is complete
       })
       .catch(error => {
@@ -74,12 +74,13 @@ $('#reviewing-text').html("<img src='https://www.svgrepo.com/show/362146/shield-
   
   $('#reveal-ip').on('click', function() {
     event.preventDefault(); // prevent the default behavior of the link
-
   $('#ip-address').toggle();
   $('#ip-value').text("<%= ip %>");
 });
-
 </script>
+
+
+
 
 
  
