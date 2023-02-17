@@ -200,7 +200,7 @@ app.get("/login", async (req, res, next) => {
 
 app.get("/register", async (req ,res ,next) => {
 
-  return res.render("register", {req, res})
+  return res.render("register", {req, res, crypto})
 })
 
 
@@ -237,6 +237,33 @@ app.post("/register", async (req, res) => {
   return res.json({status: "SUCCESS", content: "Your account has been created! " + username, jwt: jwtToken})
 });
 
+
+app.post("/api/generate-password", async (req, res) => {
+  let { password } = req.body;
+
+  let existingPassword = await urlSCH.findOne({ password });
+  while (existingPassword) {
+    // If password already exists in the database, generate a new password
+    let newPassword = '';
+    while (newPassword === '' || newPassword === password) {
+      newPassword = generatePassword(16);
+    }
+    existingPassword = await urlSCH.findOne({ password: newPassword });
+    password = newPassword;
+  }
+
+  return res.json({ status: "SUCCESS", content: password });
+});
+
+function generatePassword(length) {
+  const randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_-+={}[]|\\:;"\',.?/';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * randomChars.length);
+    password += randomChars[randomIndex];
+  }
+  return password;
+}
 
 
 
