@@ -1,5 +1,4 @@
-
-         <%- include("../components/loadLibrary.ejs") -%>
+<%- include("../components/loadLibrary.ejs") -%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +19,7 @@
 					<div class="card shadow-lg">
 						<div class="card-body p-5">
 							<h1 class="fs-4 card-title fw-bold mb-4">Register</h1>
-							<form method="POST" class="needs-validation" novalidate="" autocomplete="off" action="/register">
+							<form id="registerForm" method="POST" class="needs-validation" novalidate="" autocomplete="off" action="/register">
 								<div class="mb-3">
 									<label class="mb-2 text-muted" for="name">Username</label>
 									<input id="username" type="text" class="form-control" name="username" value="" required autofocus>
@@ -45,9 +44,8 @@
 								<div class="align-items-center d-flex">
 
                   <button type="submit" id="register-btn" class="btn btn-primary ms-auto">
-    Register
-</button>
-
+                    Register
+                  </button>
 
 								</div>
 							</form>
@@ -59,18 +57,66 @@
 						</div>
 					</div>
 					<div class="text-center mt-5 text-muted">
-						Copyright &copy; 2017-2021 &mdash; Your Company 
+						Copyright &copy; 2021-2023 &mdash; I7ii 
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
-  
 
-	<script src="js/login.js"></script>
-  <script>
+<script>
 
 
-  </script>
+$(document).ready(function() {
+  // Handle registration form submission
+  $('#registerForm').submit(function(event) {
+    // Prevent default form submission
+    event.preventDefault();
+
+    // Disable submit button
+    $('#register-btn').prop('disabled', true);
+
+    // Get form data
+    const formData = {
+      username: $('#registerForm input[name="username"]').val(),
+      password: $('#registerForm input[name="password"]').val()
+    };
+
+    // Make axios POST request to server
+    axios.post('/register', formData)
+      .then(function(response) {
+        let data = response.data;
+        if (data.status === 'SUCCESS') {
+          // Handle success response
+          $('#registerForm').append('<div class="alert alert-success mt-3"> ' + data.content + '</div>');
+          // Redirect to login page after successful registration
+          setTimeout(() => {
+            window.location.href = "/login?jwt=" + data.jwt;
+          }, 2000);
+          
+          console.log(data)
+          
+        } else {
+          // Handle error response
+          $('#registerForm').append('<div class="alert alert-danger mt-3"> ' + data.content + '</div>');
+                    console.log(data)
+
+        }
+      })
+      .catch(function(error) {
+        // Handle error response
+        $('#registerForm').append('<div class="alert alert-warning mt-3"> ' + error.message + '</div>');
+      })
+      .finally(function() {
+        // Re-enable submit button
+        $('#register-btn').prop('disabled', false);
+      });
+  });
+});
+
+
+</script>
+
 </body>
+
 </html>
