@@ -7,7 +7,6 @@ const session = require("express-session");
 const MemoryStore = require("memorystore")(session);
 
 const {IP2Proxy} = require("ip2proxy-nodejs");
-
 let ip2proxy = new IP2Proxy();
 
 const mongoose = require("mongoose")
