@@ -29,13 +29,17 @@
 								</div>
 
 
-								<div class="mb-3">
-									<label class="mb-2 text-muted" for="password">Password</label>
-									<input id="password" type="password" class="form-control" name="password" required>
-								    <div class="invalid-feedback">
-								    	Password is required
-							    	</div>
-								</div>
+
+<div class="mb-3">
+  <label class="mb-2 text-muted" for="password">Password</label>
+  <div class="input-group">
+    <input id="password" type="password" class="form-control" name="password" required>
+    <button id="generate-button" class="btn btn-outline-secondary" type="button">Generate</button>
+  </div>
+  <div class="invalid-feedback">
+    Password is required
+  </div>
+</div>
 
 								<p class="form-text text-muted mb-3">
 									By registering you agree with our terms and condition.
@@ -64,7 +68,45 @@
 		</div>
 	</section>
 
+
 <script>
+
+
+document.addEventListener("DOMContentLoaded", function(event) {
+
+
+  const generateButton = document.getElementById('generate-button');
+  const passwordInput = document.getElementById('password');
+
+  generateButton.addEventListener('click', function(event) {
+  
+        event.preventDefault();
+
+    axios.post('/api/generate-password')
+    .then(response => {
+      if (response.data && response.data.status == "SUCCESS" && response.data.content) {
+        const data = response.data;
+            
+  
+    passwordInput.type = "text";
+    passwordInput.value = data.content;
+    
+    
+}
+    })
+    .catch(error => {
+      console.error(error);
+    });
+    
+   
+
+  });
+});
+</script>
+
+<script>
+
+
 
 
 $(document).ready(function() {
