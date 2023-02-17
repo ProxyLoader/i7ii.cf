@@ -168,7 +168,10 @@ app.get("/logout", async (req, res, next) => {
   let userData = await urlSCH.findOne({token: token})
   if(!userData) return res.send("You cannot access this page go <a href='/login'>login</a> before you do this action")
   
-  return res.render("logout", {userData, res, req})
+    res.clearCookie('token');
+    
+    return res.redirect("/home/")
+    
 })
 
 app.get("/login", async (req, res, next) => {
@@ -242,12 +245,15 @@ app.post("/login", async (req,res, next) => {
   console.log(req.body)
 
   let userData = await urlSCH.findOne({username: req.body.username, password: req.body.password})
-  if(!userData) return res.send("This user could not founded in our databases!")
-  if(!userData.token) return res.send("Really weird no token founded in this account contact support!")
-  
-  res.cookie("token", userData.token)
 
-  return res.redirect("/dashboard")
+  
+  if(!userData) return res.json({status: "ERROR", content: "This user could not founded in our databases!"})
+  if(!userData.token) return res.json({status: "ERROR", content: "No token founded in this account"});
+  if(req.cookies.token) return res.json({status: "ERROR", content: "You have an active account!"})
+
+  res.cookie("token", userData.token)
+    
+  return res.json({status: "SUCCESS", content: "You have been signed in: " + userData.username})
   
 })
 
@@ -520,6 +526,6 @@ app.get("/terms-of-service", async (req, res, next) => {
     
 });
     
-app.listen(25439, async () => {
+app.listen(46541, async () => {
   console.log("The port is now opened to recive http traffic!")
 })
