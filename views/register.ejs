@@ -68,41 +68,38 @@
 		</div>
 	</section>
 
-
 <script>
+$(document).ready(function() {
+  const generateButton = $('#generate-button');
+  const passwordInput = $('#password');
 
+  generateButton.click(function(event) {
+    event.preventDefault();
 
-document.addEventListener("DOMContentLoaded", function(event) {
+    // Disable button
+    generateButton.prop('disabled', true);
 
-
-  const generateButton = document.getElementById('generate-button');
-  const passwordInput = document.getElementById('password');
-
-  generateButton.addEventListener('click', function(event) {
-  
-        event.preventDefault();
-
+    // Make API request
     axios.post('/api/generate-password')
-    .then(response => {
-      if (response.data && response.data.status == "SUCCESS" && response.data.content) {
-        const data = response.data;
-            
-  
-    passwordInput.type = "text";
-    passwordInput.value = data.content;
-    
-    
-}
-    })
-    .catch(error => {
-      console.error(error);
-    });
-    
-   
-
+      .then(response => {
+        if (response.data && response.data.status == "SUCCESS" && response.data.content) {
+          const data = response.data;
+          passwordInput.prop('type', 'text');
+          passwordInput.val(data.content);
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      })
+      .finally(() => {
+        // Re-enable button
+        generateButton.prop('disabled', false);
+      });
   });
 });
+
 </script>
+
 
 <script>
 
