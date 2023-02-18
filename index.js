@@ -17,7 +17,11 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser")
 const crypto = require("crypto")
 const rateLimit = require('express-rate-limit');
-
+const Ddos = require("ddos")
+const ddos = new Ddos({ burst: 10, limit: 15 });
+const compression = require('compression');
+const apicache = require('apicache');
+const cache = apicache.middleware;
 const config = require("./config.json")
 let registered = 0;
 let i = 0;
@@ -31,7 +35,7 @@ let ix = 0;
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.json());
-
+app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
@@ -41,13 +45,16 @@ app.use(session({
   saveUninitialized: false,
 
 }))
+app.set('trust proxy', true);
 
-const limiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
+
+app.use((error, req, res, next) => {
+  const status = error.status || 500;
+  const message = error.message || 'Internal Server Error';
+  res.status(status).json({ error: message });
 });
-app.use('*', limiter);
+
+app.use(ddos.express);
 
 
 
@@ -78,9 +85,12 @@ const createToken = (username, password) => {
 
 
 
-app.get("*", async (req, res, next) => {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
+app.get("*", async (req, res, next) => {
+    
+      const ip = req.headers['x-forwarded-for']
+
+    
           const isCaptchaRoute = req.url.includes("api") || req.url.startsWith("/captcha");
 
         console.log("[Logger] IP: " + ip + " -> " + req.method)
