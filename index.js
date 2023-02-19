@@ -111,6 +111,8 @@ app.get("*", async (req, res, next) => {
 });
 
 
+
+
 app.post('/captcha', (req, res) => {
         
     
@@ -556,7 +558,11 @@ mongoose.connect("mongodb+srv://i7ii7:ioNLcAamoU0gznRP@cluster0.qzcgm5a.mongodb.
 
 
 app.get("/terms-of-service", async (req, res, next) => {
+    
+   
+    
     return res.render("terms")
+    
 });
     
 app.listen(46541, async () => {
