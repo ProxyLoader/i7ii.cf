@@ -112,6 +112,15 @@ app.get("*", async (req, res, next) => {
 
 
 
+app.get("/bot/privacy-policy", async (req, res, next) => {
+    return res.render("vaultprivacy", {req, res, next})
+})
+
+
+app.get("/bot/terms-of-service", async (req, res, next) => {
+    return res.render("vaultterms", {req, res, next})
+})
+
 
 app.post('/captcha', (req, res) => {
         
